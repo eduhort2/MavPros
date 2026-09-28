@@ -14,20 +14,23 @@ Não renomeie abas ou cabeçalhos. Para uma nova conta, use **Cadastrar cliente*
 ## Configuração do Google
 
 1. No Google Cloud Console, crie um projeto e ative a **Google Sheets API**.
-2. Crie uma **conta de serviço** e uma chave JSON. Anote `client_email` e `private_key`. Compartilhe a planilha com `client_email` como **Editor**.
-3. Em Google Auth Platform, crie um **ID do cliente OAuth 2.0 do tipo Aplicativo Web**. Em *Origens JavaScript autorizadas*, adicione o domínio final, como `https://seu-portal.vercel.app` (sem barra final). Este botão usa JavaScript e não precisa de URI de redirecionamento.
-4. Na Vercel, em **Project Settings → Environment Variables**, configure estas variáveis para Production. Nunca coloque a chave privada no repositório.
+2. Crie uma **conta de serviço** sem chave e compartilhe a planilha com seu e-mail como **Editor**. Ative também as APIs **Security Token Service** e **IAM Service Account Credentials** no projeto Google.
+3. Na Vercel, em **Settings → Security**, mantenha o emissor OIDC em modo **Team**. No Google Cloud, em **IAM e administrador → Federação de identidade da carga de trabalho**, crie um pool e provedor OIDC, ambos com ID `vercel`. Emissor: `https://oidc.vercel.com/SEU_TEAM_SLUG`. Use **Allowed audiences** com `https://vercel.com/SEU_TEAM_SLUG` e mapeie `google.subject` para `assertion.sub`. Conceda ao principal específico `owner:SEU_TEAM_SLUG:project:SEU_PROJETO_VERCEL:environment:production` a permissão **Workload Identity User** sobre a conta de serviço.
+4. Em Google Auth Platform, crie um **ID do cliente OAuth 2.0 do tipo Aplicativo Web**. Em *Origens JavaScript autorizadas*, adicione o domínio final, como `https://seu-portal.vercel.app` (sem barra final). Este botão usa JavaScript e não precisa de URI de redirecionamento.
+5. Na Vercel, em **Project Settings → Environment Variables**, configure estas variáveis para Production.
 
 | Variável | Valor |
 | --- | --- |
 | `GOOGLE_SHEET_ID` | ID da planilha; já preenchido em `.env.example` |
 | `GOOGLE_SERVICE_ACCOUNT_EMAIL` | `client_email` da conta de serviço |
-| `GOOGLE_PRIVATE_KEY` | `private_key` do JSON, com quebras de linha ou `\n` |
+| `GCP_PROJECT_NUMBER` | Número do projeto Google Cloud, em IAM e administrador → Configurações |
+| `GCP_WORKLOAD_IDENTITY_POOL_ID` | ID do pool, por exemplo `vercel` |
+| `GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID` | ID do provedor OIDC, por exemplo `vercel` |
 | `GOOGLE_CLIENT_ID` | ID OAuth do Aplicativo Web |
 | `ADMIN_EMAIL` | E-mail Google de quem gerenciará todas as contas |
 | `SESSION_SECRET` | Sequência aleatória com pelo menos 32 caracteres |
 
-Para gerar `SESSION_SECRET`, rode `openssl rand -base64 48` no terminal e cole o resultado somente na Vercel. Para usar um domínio de teste, adicione a origem dele ao mesmo cliente OAuth.
+Para gerar `SESSION_SECRET`, rode `openssl rand -base64 48` no terminal e cole o resultado somente na Vercel. Para usar um domínio de teste, adicione a origem dele ao mesmo cliente OAuth. `GOOGLE_PRIVATE_KEY` fica vazio na autenticação sem chave. Projetos antigos que já possuem chave ainda podem usá-la, mas não é necessário criar uma nova.
 
 ## Publicação
 

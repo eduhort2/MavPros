@@ -10,7 +10,7 @@ export async function POST(request:Request){
   const {credential}=await request.json() as {credential?:string};if(!credential)return Response.json({error:'Credencial ausente.'},{status:400});
   const email=await verifyGoogleCredential(credential);
   const admin=(process.env.ADMIN_EMAIL||'').toLowerCase();
-  if(email!==admin){const clients=await getRows('Clientes');if(!clients.some(r=>r.cells[2]?.trim().toLowerCase()===email&&r.cells[3]!=='Inativo'))return Response.json({error:'Este e-mail ainda não foi cadastrado para acesso.'},{status:403});}
+  if(email!==admin){const clients=await getRows('Clientes',request);if(!clients.some(r=>r.cells[2]?.trim().toLowerCase()===email&&r.cells[3]!=='Inativo'))return Response.json({error:'Este e-mail ainda não foi cadastrado para acesso.'},{status:403});}
   const result=NextResponse.json({ok:true});result.cookies.set(sessionCookie.name,makeSession(email),sessionCookie);return result;
  }catch(e){console.error(e);return Response.json({error:e instanceof Error?e.message:'Não foi possível entrar.'},{status:401});}
 }
